@@ -181,13 +181,63 @@ function renderSVG(data) {
   svg.setAttribute("class", "triangle-svg");
   
   if (data.type === "side-by-side") {
-    drawSingleTriangle(svg, data.t1, "t1-style", "t1-point", "t1");
-    drawSingleTriangle(svg, data.t2, "t2-style", "t2-point", "t2");
+    const g1 = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g1.setAttribute("id", "g-t1");
+    g1.setAttribute("class", "svg-group");
+    drawSingleTriangle(g1, data.t1, "t1-style", "t1-point", "t1");
+    svg.appendChild(g1);
+    
+    const g2 = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g2.setAttribute("id", "g-t2");
+    g2.setAttribute("class", "svg-group");
+    drawSingleTriangle(g2, data.t2, "t2-style", "t2-point", "t2");
+    svg.appendChild(g2);
+    
+    calculateAndSetCentroidCSS(svg, data);
   } else if (data.type === "shared-side") {
     drawSharedTriangles(svg, data);
+    
+    // For shared-side level 8, ABD and CBD split vertically
+    svg.style.setProperty('--t1-tx', '0px');
+    svg.style.setProperty('--t1-ty', '-22px');
+    svg.style.setProperty('--t2-tx', '0px');
+    svg.style.setProperty('--t2-ty', '22px');
   }
   
   svgContainer.appendChild(svg);
+}
+
+function calculateAndSetCentroidCSS(svg, data) {
+  const points1 = data.t1.points;
+  const points2 = data.t2.points;
+  
+  const c1 = [
+    (points1[0][0] + points1[1][0] + points1[2][0]) / 3,
+    (points1[0][1] + points1[1][1] + points1[2][1]) / 3
+  ];
+  const c2 = [
+    (points2[0][0] + points2[1][0] + points2[2][0]) / 3,
+    (points2[0][1] + points2[1][1] + points2[2][1]) / 3
+  ];
+  
+  const center = [160, 85];
+  
+  const tx1 = center[0] - c1[0];
+  const ty1 = center[1] - c1[1];
+  const tx2 = center[0] - c2[0];
+  const ty2 = center[1] - c2[1];
+  
+  svg.style.setProperty('--t1-tx', `${tx1}px`);
+  svg.style.setProperty('--t1-ty', `${ty1}px`);
+  svg.style.setProperty('--t2-tx', `${tx2}px`);
+  svg.style.setProperty('--t2-ty', `${ty2}px`);
+  svg.style.setProperty('--t2-cx', `${c2[0]}px`);
+  svg.style.setProperty('--t2-cy', `${c2[1]}px`);
+  
+  // For Level 5 (reflected):
+  if (currentLevelIndex === 4) {
+    svg.style.setProperty('--t2-extra-transform', 'scaleX(-1)');
+  }
 }
 
 // Draw single triangle with labels, ticks, arcs AND interactive overlays
@@ -383,9 +433,19 @@ function drawSingleTriangle(svg, t, triClass, pointClass, triId) {
   });
 }
 
-// Draw shared-side figure with interactive overlays
+// Draw shared-side figure with interactive overlays (grouped for split animations)
 function drawSharedTriangles(svg, data) {
   const points = data.points;
+  
+  const g1 = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g1.setAttribute("id", "g-t1");
+  g1.setAttribute("class", "svg-group");
+  svg.appendChild(g1);
+  
+  const g2 = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g2.setAttribute("id", "g-t2");
+  g2.setAttribute("class", "svg-group");
+  svg.appendChild(g2);
   
   // ABD (0, 1, 3) and CBD (2, 1, 3)
   const t1Points = [points[0], points[1], points[3]];
@@ -405,13 +465,13 @@ function drawSharedTriangles(svg, data) {
   poly1.setAttribute("points", t1Points.map(p => p.join(",")).join(" "));
   poly1.setAttribute("class", "svg-triangle t1-style");
   poly1.setAttribute("id", "poly-t1");
-  svg.appendChild(poly1);
+  g1.appendChild(poly1);
   
   const poly2 = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   poly2.setAttribute("points", t2Points.map(p => p.join(",")).join(" "));
   poly2.setAttribute("class", "svg-triangle t2-style");
   poly2.setAttribute("id", "poly-t2");
-  svg.appendChild(poly2);
+  g2.appendChild(poly2);
   
   // Ticks
   if (data.marks && data.marks.sides) {
@@ -429,6 +489,7 @@ function drawSharedTriangles(svg, data) {
       const uy = dy / len;
       
       const centroid = (indices.includes(0)) ? c1 : c2;
+      const targetGroup = (indices.includes(0)) ? g1 : g2;
       const triId = (indices.includes(0)) ? "t1" : "t2";
       
       const px = -uy;
@@ -460,33 +521,43 @@ function drawSharedTriangles(svg, data) {
         line.setAttribute("class", "svg-side-mark");
         line.setAttribute("id", `mark-${triId}-side-${key}`);
         line.style.opacity = "0.15";
-        svg.appendChild(line);
+        targetGroup.appendChild(line);
       }
     }
   }
   
-  // Vertices
-  points.forEach((p, i) => {
+  // Vertices helper
+  const drawVertex = (idx, labelText, targetGroup, pointClass) => {
+    const p = points[idx];
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", p[0]);
     circle.setAttribute("cy", p[1]);
-    circle.setAttribute("class", `svg-vertex-point ${i === 2 ? 't2-point' : 't1-point'}`);
-    svg.appendChild(circle);
+    circle.setAttribute("class", `svg-vertex-point ${pointClass}`);
+    targetGroup.appendChild(circle);
     
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    const offset = data.labelOffsets ? data.labelOffsets[i] : [0, 0];
+    const offset = data.labelOffsets ? data.labelOffsets[idx] : [0, 0];
     label.setAttribute("x", p[0] + offset[0]);
     label.setAttribute("y", p[1] + offset[1]);
     label.setAttribute("class", "svg-vertex-label");
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "middle");
-    label.textContent = data.labels[i];
-    svg.appendChild(label);
-  });
+    label.textContent = labelText;
+    targetGroup.appendChild(label);
+  };
+  
+  // Draw T1 vertices in g1
+  drawVertex(0, data.labels[0], g1, "t1-point");
+  drawVertex(1, data.labels[1], g1, "t1-point");
+  drawVertex(3, data.labels[3], g1, "t1-point");
+  
+  // Draw T2 vertices in g2
+  drawVertex(2, data.labels[2], g2, "t2-point");
+  drawVertex(1, data.labels[1], g2, "t2-point");
+  drawVertex(3, data.labels[3], g2, "t2-point");
 
   // Interactive Overlays
-  // Sides
-  const addSideOverlay = (p1Idx, p2Idx, key, triId) => {
+  const addSideOverlay = (p1Idx, p2Idx, key, triId, targetGroup) => {
     const p1 = points[p1Idx];
     const p2 = points[p2Idx];
     const overlay = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -497,18 +568,18 @@ function drawSharedTriangles(svg, data) {
     overlay.setAttribute("class", "svg-overlay-line");
     overlay.setAttribute("id", `overlay-${triId}-${key}`);
     overlay.addEventListener("click", () => handleInteractiveClick(triId, "side", key, overlay));
-    svg.appendChild(overlay);
+    targetGroup.appendChild(overlay);
   };
 
   // T1: ABD -> sides: AB(0-1), BD(1-3), AD(0-3)
-  addSideOverlay(0, 1, "side-0-1", "t1");
-  addSideOverlay(0, 3, "side-0-3", "t1");
-  addSideOverlay(1, 3, "side-1-3", "t1"); // Shared side in T1
+  addSideOverlay(0, 1, "side-0-1", "t1", g1);
+  addSideOverlay(0, 3, "side-0-3", "t1", g1);
+  addSideOverlay(1, 3, "side-1-3", "t1", g1); // Shared side in T1
 
   // T2: CBD -> sides: CB(1-2), BD(1-3), CD(2-3)
-  addSideOverlay(1, 2, "side-1-2", "t2");
-  addSideOverlay(2, 3, "side-2-3", "t2");
-  addSideOverlay(1, 3, "side-1-3", "t2"); // Shared side in T2
+  addSideOverlay(1, 2, "side-1-2", "t2", g2);
+  addSideOverlay(2, 3, "side-2-3", "t2", g2);
+  addSideOverlay(1, 3, "side-1-3", "t2", g2); // Shared side in T2
 }
 
 // Handle tactile marking clicks/taps
@@ -881,6 +952,9 @@ function checkAnswer(selected, answer, element) {
   feedbackBox.style.display = "block";
   feedbackBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
   
+  // Trigger geometric explanation animation
+  triggerExplanationAnimation(isCorrect);
+  
   // Disable options/interaction
   if (currentQuestion.type === "multiple-choice") {
     const allBtns = optionsContainer.querySelectorAll(".option-btn");
@@ -900,6 +974,37 @@ function checkAnswer(selected, answer, element) {
     btnNextLevel.textContent = "סיים משחק בהצלחה!";
   } else {
     btnNextLevel.textContent = "המשך לשער הבא ➔";
+  }
+}
+
+function triggerExplanationAnimation(isCorrect) {
+  const container = svgContainer.querySelector(".triangle-svg");
+  if (!container) return;
+  
+  // Reset any active animation classes
+  container.classList.remove("congruence-active", "congruence-merged", "similarity-active");
+  
+  // Force a reflow to restart CSS animations
+  void container.offsetWidth;
+  
+  if (currentLevelIndex === 3) {
+    // Gate 4: Similarity scaling animation (decoy)
+    container.classList.add("similarity-active");
+  } else {
+    // Other gates: Congruence slide and merge animation
+    container.classList.add("congruence-active");
+    
+    // Merge into green glowing shape after glide completes (1.2s)
+    setTimeout(() => {
+      if (container.classList.contains("congruence-active")) {
+        container.classList.add("congruence-merged");
+      }
+    }, 1200);
+    
+    // Return to original layout after 3.8s
+    setTimeout(() => {
+      container.classList.remove("congruence-merged", "congruence-active");
+    }, 3800);
   }
 }
 

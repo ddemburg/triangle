@@ -732,3 +732,55 @@ body {
     height: 160px;
   }
 }
+
+/* --- GEOMETRIC ANIMATIONS --- */
+
+.svg-group {
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Congruence active state: Glides triangles to meet at the center */
+.congruence-active #g-t1 {
+  transform: translate(var(--t1-tx), var(--t1-ty)) !important;
+}
+
+.congruence-active #g-t2 {
+  transform: translate(var(--t2-tx), var(--t2-ty)) var(--t2-extra-transform, ) !important;
+}
+
+/* Similarity scaling active state: Scales T2 up and down centered around its centroid */
+.similarity-active #g-t2 {
+  animation: similarityScale 2.5s infinite ease-in-out !important;
+  transform-origin: var(--t2-cx) var(--t2-cy) !important;
+}
+
+@keyframes similarityScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.6); }
+}
+
+/* Glowing green merge state for congruent triangles */
+.congruence-merged .svg-triangle {
+  stroke: var(--success) !important;
+  fill: rgba(16, 185, 129, 0.12) !important;
+  filter: drop-shadow(0 0 8px var(--success-glow)) !important;
+  stroke-width: 3.5px !important;
+  transition: all 0.5s ease;
+}
+
+.congruence-merged .svg-vertex-point {
+  stroke: var(--success) !important;
+  fill: #ffffff !important;
+}
+
+.congruence-merged .svg-side-mark,
+.congruence-merged .svg-angle-arc {
+  stroke: var(--success) !important;
+  opacity: 1 !important;
+}
+
+.congruence-merged .svg-side-text,
+.congruence-merged .svg-angle-text {
+  fill: #ffffff !important;
+  filter: drop-shadow(0 0 3px var(--success-glow)) !important;
+}
