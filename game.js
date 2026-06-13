@@ -11,6 +11,7 @@ let gameState = 'marking'; // 'marking' or 'quiz'
 let selectedT1Element = null; // { type, key, element }
 let selectedT2Element = null; // { type, key, element }
 let matchedPairs = []; // Array of matched t1 keys
+let activeTimeouts = []; // Track active animation timeouts to clear them
 
 // DOM Elements
 const screenSplash = document.getElementById("screen-splash");
@@ -132,6 +133,10 @@ function updateHeader() {
 }
 
 function loadLevel(index) {
+  // Clear any running explanation timeouts
+  activeTimeouts.forEach(clearTimeout);
+  activeTimeouts = [];
+  
   if (index >= QUESTIONS.length) {
     endGame(true);
     return;
@@ -982,35 +987,111 @@ function checkAnswer(selected, answer, element) {
   }
 }
 
+function toggleMarkingHighlight(t1Key, t2Key, type, addClass) {
+  const container = svgContainer.querySelector(".triangle-svg");
+  if (!container) return;
+  
+  // Highlight the overlays
+  const overlayT1 = container.getElementById(`overlay-t1-${t1Key}`);
+  const overlayT2 = container.getElementById(`overlay-t2-${t2Key}`);
+  if (overlayT1) overlayT1.classList.toggle("anim-highlight", addClass);
+  if (overlayT2) overlayT2.classList.toggle("anim-highlight", addClass);
+  
+  const sideId1 = t1Key.replace("side-", "");
+  const sideId2 = t2Key.replace("side-", "");
+  
+  if (type === "side") {
+    // Highlight ticks
+    const marksT1 = container.querySelectorAll(`[id="mark-t1-side-${sideId1}"]`);
+    const marksT2 = container.querySelectorAll(`[id="mark-t2-side-${sideId2}"]`);
+    marksT1.forEach(m => m.classList.toggle("anim-highlight-mark", addClass));
+    marksT2.forEach(m => m.classList.toggle("anim-highlight-mark", addClass));
+    
+    // Highlight side texts
+    const textT1 = container.getElementById(`text-t1-side-${sideId1}`);
+    const textT2 = container.getElementById(`text-t2-side-${sideId2}`);
+    if (textT1) textT1.classList.toggle("anim-highlight-mark", addClass);
+    if (textT2) textT2.classList.toggle("anim-highlight-mark", addClass);
+  } else if (type === "angle") {
+    const idx1 = t1Key.split("-")[1];
+    const idx2 = t2Key.split("-")[1];
+    
+    // Highlight arcs
+    const arcsT1 = container.querySelectorAll(`[id="mark-t1-angle-${idx1}"]`);
+    const arcsT2 = container.querySelectorAll(`[id="mark-t2-angle-${idx2}"]`);
+    arcsT1.forEach(a => a.classList.toggle("anim-highlight-mark", addClass));
+    arcsT2.forEach(a => a.classList.toggle("anim-highlight-mark", addClass));
+    
+    // Highlight angle texts
+    const textT1 = container.getElementById(`text-t1-angle-${idx1}`);
+    const textT2 = container.getElementById(`text-t2-angle-${idx2}`);
+    if (textT1) textT1.classList.toggle("anim-highlight-mark", addClass);
+    if (textT2) textT2.classList.toggle("anim-highlight-mark", addClass);
+  }
+}
+
 function triggerExplanationAnimation(isCorrect) {
   const container = svgContainer.querySelector(".triangle-svg");
   if (!container) return;
   
+  // Clear any existing explanation timeouts
+  activeTimeouts.forEach(clearTimeout);
+  activeTimeouts = [];
+  
   // Reset any active animation classes
   container.classList.remove("congruence-active", "congruence-merged", "similarity-active");
+  const allHighlights = container.querySelectorAll(".anim-highlight, .anim-highlight-mark");
+  allHighlights.forEach(el => el.classList.remove("anim-highlight", "anim-highlight-mark"));
   
   // Force a reflow to restart CSS animations
   void container.offsetWidth;
   
-  if (currentLevelIndex === 3) {
-    // Gate 4: Similarity scaling animation (decoy)
-    container.classList.add("similarity-active");
-  } else {
-    // Other gates: Congruence slide and merge animation
-    container.classList.add("congruence-active");
+  const currentQuestion = QUESTIONS[currentLevelIndex];
+  const pairs = currentQuestion.markingPairs;
+  
+  // 1. Highlight each pair sequentially
+  pairs.forEach((pair, idx) => {
+    // Schedule start of highlight
+    const startTimeout = setTimeout(() => {
+      toggleMarkingHighlight(pair.t1, pair.t2, pair.type, true);
+    }, idx * 1000);
+    activeTimeouts.push(startTimeout);
     
-    // Merge into green glowing shape after glide completes (1.2s)
-    setTimeout(() => {
-      if (container.classList.contains("congruence-active")) {
-        container.classList.add("congruence-merged");
-      }
-    }, 1200);
-    
-    // Return to original layout after 3.8s
-    setTimeout(() => {
-      container.classList.remove("congruence-merged", "congruence-active");
-    }, 3800);
-  }
+    // Schedule end of highlight
+    const endTimeout = setTimeout(() => {
+      toggleMarkingHighlight(pair.t1, pair.t2, pair.type, false);
+    }, idx * 1000 + 850);
+    activeTimeouts.push(endTimeout);
+  });
+  
+  // 2. Start the transition (merge or scale) after all pairs finished highlighting
+  const transitionStartDelay = pairs.length * 1000;
+  
+  const transitionTimeout = setTimeout(() => {
+    if (currentLevelIndex === 3) {
+      // Gate 4: Similarity scaling animation (decoy)
+      container.classList.add("similarity-active");
+    } else {
+      // Other gates: Congruence slide and merge animation
+      container.classList.add("congruence-active");
+      
+      // Merge into green glowing shape after glide completes (1.2s)
+      const subMergeTimeout = setTimeout(() => {
+        if (container.classList.contains("congruence-active")) {
+          container.classList.add("congruence-merged");
+        }
+      }, 1200);
+      activeTimeouts.push(subMergeTimeout);
+    }
+  }, transitionStartDelay);
+  activeTimeouts.push(transitionTimeout);
+  
+  // 3. Return to original layout after some time
+  const totalDuration = transitionStartDelay + (currentLevelIndex === 3 ? 5500 : 3800);
+  const resetTimeout = setTimeout(() => {
+    container.classList.remove("congruence-merged", "congruence-active", "similarity-active");
+  }, totalDuration);
+  activeTimeouts.push(resetTimeout);
 }
 
 function nextLevel() {

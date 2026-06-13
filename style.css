@@ -784,3 +784,50 @@ body {
   fill: #ffffff !important;
   filter: drop-shadow(0 0 3px var(--success-glow)) !important;
 }
+
+/* Pulsing Hint button glow */
+.hint-btn {
+  animation: hintPulse 2s infinite ease-in-out !important;
+}
+
+@keyframes hintPulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+    color: #facc15;
+    text-shadow: 0 0 12px rgba(250, 204, 21, 0.9);
+  }
+}
+
+/* Visual highlight during step-by-step theorem animation */
+.svg-overlay-line.anim-highlight {
+  stroke: #facc15 !important;
+  stroke-width: 18px !important;
+  opacity: 0.75 !important;
+  filter: drop-shadow(0 0 10px #facc15) !important;
+}
+
+.svg-overlay-angle.anim-highlight {
+  fill: rgba(250, 204, 21, 0.55) !important;
+  filter: drop-shadow(0 0 10px #facc15) !important;
+}
+
+.svg-side-mark.anim-highlight-mark,
+.svg-angle-arc.anim-highlight-mark {
+  stroke: #facc15 !important;
+  stroke-width: 3.5px !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px #facc15) !important;
+}
+
+.svg-side-text.anim-highlight-mark,
+.svg-angle-text.anim-highlight-mark {
+  fill: #facc15 !important;
+  font-weight: 800 !important;
+  filter: drop-shadow(0 0 5px #facc15) !important;
+  opacity: 1 !important;
+}
