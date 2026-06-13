@@ -104,6 +104,9 @@ function toggleHint() {
     hintBox.style.display = "block";
     hintBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     hintBtn.textContent = "💡 הסתר רמז";
+    
+    // Trigger visual explanation animation as a hint!
+    triggerExplanationAnimation(true);
   }
 }
 
@@ -304,7 +307,7 @@ function drawSingleTriangle(svg, t, triClass, pointClass, triId) {
           line.setAttribute("y2", cy + tickHalfLen * ny);
           line.setAttribute("class", "svg-side-mark");
           line.setAttribute("id", `mark-${triId}-side-${key}`);
-          line.style.opacity = "0.15"; // Dim initial state
+          line.style.opacity = "0.55"; // Muted visible state
           svg.appendChild(line);
         }
       } else if (typeof val === "string") {
@@ -317,7 +320,7 @@ function drawSingleTriangle(svg, t, triClass, pointClass, triId) {
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "middle");
         text.textContent = val;
-        text.style.opacity = "0.15";
+        text.style.opacity = "0.55";
         svg.appendChild(text);
       }
     }
@@ -360,7 +363,7 @@ function drawSingleTriangle(svg, t, triClass, pointClass, triId) {
           path.setAttribute("d", `M ${start[0]} ${start[1]} A ${r} ${r} 0 0 ${sweepFlag} ${end[0]} ${end[1]}`);
           path.setAttribute("class", "svg-angle-arc");
           path.setAttribute("id", `mark-${triId}-angle-${idx}`);
-          path.style.opacity = "0.15";
+          path.style.opacity = "0.55";
           svg.appendChild(path);
         }
       }
@@ -374,7 +377,7 @@ function drawSingleTriangle(svg, t, triClass, pointClass, triId) {
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "middle");
         text.textContent = angleInfo.text;
-        text.style.opacity = "0.15";
+        text.style.opacity = "0.55";
         svg.appendChild(text);
       }
     }
@@ -520,7 +523,7 @@ function drawSharedTriangles(svg, data) {
         line.setAttribute("y2", cy + 5 * ny);
         line.setAttribute("class", "svg-side-mark");
         line.setAttribute("id", `mark-${triId}-side-${key}`);
-        line.style.opacity = "0.15";
+        line.style.opacity = "0.55";
         targetGroup.appendChild(line);
       }
     }
