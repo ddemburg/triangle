@@ -5,6 +5,7 @@ let lives = 3;
 let streak = 0;
 let selectedOption = null;
 let isMuted = false;
+let playerName = 'עמית';
 
 // Selection states for Interactive Marking Phase
 let gameState = 'marking'; // 'marking' or 'quiz'
@@ -55,6 +56,26 @@ function init() {
 
   // Setup QR code for mobile sharing if IP parameter is present
   setupQRSharing();
+
+  // Setup greeting for Amit or customized name
+  setupDynamicGreeting();
+}
+
+function setupDynamicGreeting() {
+  const urlParams = new URLSearchParams(window.location.search);
+  playerName = urlParams.get('name') || 'עמית';
+  const splashTitle = document.querySelector("#screen-splash h1.hero-title");
+  const splashSubtitle = document.querySelector("#screen-splash p.hero-subtitle");
+  
+  if (splashTitle && splashSubtitle) {
+    if (playerName === 'עמית') {
+      splashTitle.textContent = "היי עמית!";
+      splashSubtitle.innerHTML = "אבא הכין לך משחק קצר ומגניב לתרגול חפיפת משולשים לקראת המבחן. בהצלחה! 🚀";
+    } else {
+      splashTitle.textContent = `היי ${playerName}!`;
+      splashSubtitle.innerHTML = `הכנתי לך משחק קצר ומגניב לתרגול חפיפת משולשים לקראת המבחן. בהצלחה! 🚀`;
+    }
+  }
 }
 
 function setupQRSharing() {
@@ -1130,7 +1151,7 @@ function endGame(completed) {
     
     if (lives === 3) {
       medalContainer.textContent = "👑";
-      endTitle.innerHTML += "<br><span style='font-size: 1.1rem; color: var(--secondary); font-weight: normal;'>ציון מושלם! עמית, אתה גאון גאומטריה!</span>";
+      endTitle.innerHTML += `<br><span style='font-size: 1.1rem; color: var(--secondary); font-weight: normal;'>ציון מושלם! ${playerName}, אתה גאון גאומטריה!</span>`;
     } else if (lives === 2) {
       medalContainer.textContent = "🥇";
       endTitle.innerHTML += "<br><span style='font-size: 1.1rem; color: var(--secondary); font-weight: normal;'>ביצוע מצוין! כמעט מושלם!</span>";
