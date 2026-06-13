@@ -1,4 +1,4 @@
-﻿// Game variables
+// Game variables
 let currentLevelIndex = 0;
 let score = 0;
 let lives = 3;
@@ -446,8 +446,9 @@ function drawSharedTriangles(svg, data) {
         ny = -ny;
       }
       
+      const tickSpacing = 4;
       for (let k = 0; k < val; k++) {
-        const shift = (k - (val - 1) / 2) * tickSpacing = 4;
+        const shift = (k - (val - 1) / 2) * tickSpacing;
         const cx = mid[0] + shift * ux;
         const cy = mid[1] + shift * uy;
         
