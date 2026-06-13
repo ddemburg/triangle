@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>אתגר השערים: חפיפת משולשים - משחק מתמטיקה לכיתה ח'</title>
+  <meta name="description" content="משחק לימודי אינטראקטיבי מרהיב המכין למבחן בנושא חפיפת משולשים לכיתה ח'. תרגל משפטי חפיפה (צ.צ.צ, צ.ז.צ, ז.צ.ז), התאמת קדקודים וחישובי נעלמים ישירות מהטלפון.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Mute/Sound Control -->
+    <button id="btn-toggle-mute" class="btn btn-primary" style="position: absolute; top: 12px; left: 12px; width: auto; padding: 6px 12px; font-size: 0.8rem; border-radius: 99px; z-index: 10;">
+      🔊 סאונד פעיל
+    </button>
+
+    <!-- 1. SPLASH SCREEN -->
+    <div id="screen-splash" class="screen active">
+      <div style="text-align: center; margin-top: 20px;">
+        <h1 class="hero-title">אתגר השערים</h1>
+        <p class="hero-subtitle">חפיפת משולשים • כיתה ח'</p>
+      </div>
+
+      <div class="features-list">
+        <div class="feature-item">
+          <span class="feature-icon">✨</span>
+          <div class="feature-text">
+            <strong>8 שערים קלילים:</strong> תרגול מהיר והדרגתי המותאם במיוחד למבחן.
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📐</span>
+          <div class="feature-text">
+            <strong>שרטוטים חיים:</strong> משולשים אינטראקטיביים עם סימוני זוויות וצלעות ברורים.
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📱</span>
+          <div class="feature-text">
+            <strong>מותאם לטלפון:</strong> ממשק מגע מהיר ונוח ללא צורך במקלדת.
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-start" class="btn btn-primary">התחל באתגר הקוסמי 🚀</button>
+    </div>
+
+    <!-- 2. GAME PLAY SCREEN -->
+    <div id="screen-game" class="screen">
+      <!-- Top info bar -->
+      <div class="game-header">
+        <div class="lives-container" id="lives-container">
+          <span class="heart">❤️</span>
+          <span class="heart">❤️</span>
+          <span class="heart">❤️</span>
+        </div>
+        <div class="score-badge">
+          ניקוד: <span id="score-val">0</span>
+        </div>
+      </div>
+
+      <!-- Level progress -->
+      <div class="progress-bar-container">
+        <div id="progress-fill" class="progress-bar-fill"></div>
+      </div>
+
+      <!-- Question Text -->
+      <div class="question-box">
+        <div id="level-tag" class="level-tag">שער 1: צלע, צלע, צלע</div>
+        <h2 id="question-text" class="question-text">טוען שאלה...</h2>
+      </div>
+
+      <!-- Drawing Canvas Area -->
+      <div class="canvas-container" id="svg-container">
+        <!-- SVG will be injected here dynamically -->
+      </div>
+
+      <!-- Hint box -->
+      <button id="hint-btn" class="hint-btn">💡 הצג רמז</button>
+      <div id="hint-box" class="hint-box">טוען רמז...</div>
+
+      <!-- Answers / Options Container -->
+      <div class="options-container" id="options-container">
+        <!-- Option buttons or drag-drop proof table injected here -->
+      </div>
+
+      <!-- Feedback modal overlay / drawer -->
+      <div class="feedback-box" id="feedback-box">
+        <h3 class="feedback-title" id="feedback-title">🏆 נכון מאוד!</h3>
+        <p class="feedback-explanation" id="feedback-explanation">הסבר מפורט...</p>
+        <button id="btn-next-level" class="btn btn-primary">המשך לשער הבא ➔</button>
+      </div>
+    </div>
+
+    <!-- 3. GAME END SCREEN -->
+    <div id="screen-end" class="screen">
+      <div class="crown-medal" id="medal-container">👑</div>
+      <h1 class="hero-title" id="end-title">סיכום משימה</h1>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-accuracy">0%</div>
+          <div class="stat-label">דיוק בתשובות</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-score">0</div>
+          <div class="stat-label">ניקוד סופי</div>
+        </div>
+        <div class="stat-card" style="grid-column: span 2;">
+          <div class="stat-val" id="stat-streak">0</div>
+          <div class="stat-label">רצף תשובות נכונות סופי</div>
+        </div>
+      </div>
+
+      <button id="btn-restart" class="btn btn-primary">שחק שוב 🔁</button>
+    </div>
+
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
