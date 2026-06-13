@@ -1,4 +1,4 @@
-// Game variables
+﻿// Game variables
 let currentLevelIndex = 0;
 let score = 0;
 let lives = 3;
@@ -63,7 +63,7 @@ function setupQRSharing() {
     const qrCard = document.createElement("div");
     qrCard.className = "qr-card";
     qrCard.innerHTML = `
-      <div class="qr-title">📱 סרוק לשיתוף מהיר לטלפון של דן:</div>
+      <div class="qr-title">📱 סרוק לשיתוף מהיר לטלפון של עמית:</div>
       <img class="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://${ip}:8000" alt="קוד QR">
       <div class="qr-instructions">ודא שהטלפון מחובר לאותו Wi-Fi, וסרוק את הקוד עם המצלמה להתחלת המשחק בנייד</div>
     `;
@@ -938,7 +938,7 @@ function endGame(completed) {
     
     if (lives === 3) {
       medalContainer.textContent = "👑";
-      endTitle.innerHTML += "<br><span style='font-size: 1.1rem; color: var(--secondary); font-weight: normal;'>ציון מושלם! דן, אתה גאון גאומטריה!</span>";
+      endTitle.innerHTML += "<br><span style='font-size: 1.1rem; color: var(--secondary); font-weight: normal;'>ציון מושלם! עמית, אתה גאון גאומטריה!</span>";
     } else if (lives === 2) {
       medalContainer.textContent = "🥇";
       endTitle.innerHTML += "<br><span style='font-size: 1.1rem; color: var(--secondary); font-weight: normal;'>ביצוע מצוין! כמעט מושלם!</span>";
@@ -1039,3 +1039,4 @@ function playSound(type) {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
