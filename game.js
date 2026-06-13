@@ -406,7 +406,7 @@ function drawSingleTriangle(svg, t, triClass, pointClass, triId) {
     const p1 = points[i];
     const p2 = points[next];
     
-    const sideKey = `side-${Math.min(i, next)}-${Math.max(i, next)}`;
+    const sideKey = `side-${i}-${next}`;
     
     const overlay = document.createElementNS("http://www.w3.org/2000/svg", "line");
     overlay.setAttribute("x1", p1[0]);
@@ -738,14 +738,16 @@ function highlightSVGMarkings(t1Key, t2Key, type) {
   
   if (type === "side") {
     // Highlight marks
-    const marksT1 = container.querySelectorAll(`[id="mark-t1-side-${t1Key}"]`);
-    const marksT2 = container.querySelectorAll(`[id="mark-t2-side-${t2Key}"]`);
+    const sideId1 = t1Key.replace("side-", "");
+    const sideId2 = t2Key.replace("side-", "");
+    const marksT1 = container.querySelectorAll(`[id="mark-t1-side-${sideId1}"]`);
+    const marksT2 = container.querySelectorAll(`[id="mark-t2-side-${sideId2}"]`);
     marksT1.forEach(m => { m.style.opacity = "1"; m.style.stroke = "var(--primary)"; m.style.strokeWidth = "3.5"; });
     marksT2.forEach(m => { m.style.opacity = "1"; m.style.stroke = "var(--secondary)"; m.style.strokeWidth = "3.5"; });
 
     // Highlight text labels if exist
-    const textT1 = container.getElementById(`text-t1-side-${t1Key}`);
-    const textT2 = container.getElementById(`text-t2-side-${t2Key}`);
+    const textT1 = container.getElementById(`text-t1-side-${sideId1}`);
+    const textT2 = container.getElementById(`text-t2-side-${sideId2}`);
     if (textT1) { textT1.style.opacity = "1"; textT1.classList.add("matched"); }
     if (textT2) { textT2.style.opacity = "1"; textT2.classList.add("matched"); }
 
